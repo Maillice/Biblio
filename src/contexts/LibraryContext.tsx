@@ -72,27 +72,56 @@ export const LibraryProvider: React.FC<{ children: ReactNode }> = ({ children })
   // Initialize current user
   useEffect(() => {
     const initializeUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: libraryUser } = await supabase
-          .from('library_users')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (libraryUser) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: libraryUser } = await supabase
+            .from('library_users')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (libraryUser) {
+            setCurrentUser({
+              id: libraryUser.id,
+              username: libraryUser.username,
+              email: libraryUser.email,
+              role: libraryUser.role,
+              firstName: libraryUser.first_name,
+              lastName: libraryUser.last_name,
+              lastLogin: libraryUser.last_login ? new Date(libraryUser.last_login) : new Date(),
+              status: libraryUser.status,
+              permissions: libraryUser.permissions || []
+            });
+          }
+        } else {
+          // Set a default demo user when not authenticated
           setCurrentUser({
-            id: libraryUser.id,
-            username: libraryUser.username,
-            email: libraryUser.email,
-            role: libraryUser.role,
-            firstName: libraryUser.first_name,
-            lastName: libraryUser.last_name,
-            lastLogin: libraryUser.last_login ? new Date(libraryUser.last_login) : new Date(),
-            status: libraryUser.status,
-            permissions: libraryUser.permissions || []
+            id: 'demo-user',
+            username: 'demo',
+            email: 'demo@bibliotheque.com',
+            role: 'admin',
+            firstName: 'Utilisateur',
+            lastName: 'Démo',
+            lastLogin: new Date(),
+            status: 'active',
+            permissions: ['all']
           });
         }
+      } catch (error) {
+        console.error('Error initializing user:', error);
+        // Set a default demo user on error
+        setCurrentUser({
+          id: 'demo-user',
+          username: 'demo',
+          email: 'demo@bibliotheque.com',
+          role: 'admin',
+          firstName: 'Utilisateur',
+          lastName: 'Démo',
+          lastLogin: new Date(),
+          status: 'active',
+          permissions: ['all']
+        });
       }
     };
     

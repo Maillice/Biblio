@@ -166,6 +166,11 @@ export const useSupabaseData = () => {
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching data:', err);
+      
+      // If it's a connection error, provide helpful guidance
+      if (err.message?.includes('NetworkError') || err.message?.includes('fetch')) {
+        setError('Impossible de se connecter à la base de données. Veuillez configurer Supabase en cliquant sur "Connect to Supabase" en haut à droite.');
+      }
     } finally {
       setLoading(false);
     }
